@@ -54,6 +54,10 @@ def bsplit(bytestring, *lengths):
         offset += length
 
 
+class CorruptOrInvalidPassword(Exception):
+    pass
+
+
 class Decryptor:
     # pylint: disable=too-few-public-methods
     """A decryptor for SafeCamera-encrypted content."""
@@ -78,9 +82,12 @@ class Decryptor:
         pad_spec = padding.PKCS7(128)
         unpadder = pad_spec.unpadder()
 
-        for chunk in provider.read():
-            yield unpadder.update(decryptor.update(chunk))
-        yield unpadder.update(decryptor.finalize()) + unpadder.finalize()
+        try:
+            for chunk in provider.read():
+                yield unpadder.update(decryptor.update(chunk))
+            yield unpadder.update(decryptor.finalize()) + unpadder.finalize()
+        except ValueError:
+            raise CorruptOrInvalidPassword()
 
 
 class _Provider(metaclass=ABCMeta):
