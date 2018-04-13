@@ -146,6 +146,8 @@ class FilenameProvider(_FileBasedProvider):
         super().__init__(**kwargs)
         filename = basename(self.path)
         match = re.match(r'zzSC-\d+_(?P<enc_part>[A-Za-z0-9]+)\.sc', filename)
+        if not match:
+            raise ValueError(self.path)
         self._encrypted_part = binascii.a2b_hex(match.group('enc_part'))
 
     def get_params(self):
