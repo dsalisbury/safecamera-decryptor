@@ -18,4 +18,10 @@ setup(
         'jasypt4py',
         'pycrypto',
     ),
+
+    entry_points={
+        'console_scripts': [
+            'safecamera-decryptor = safecamera_decryptor.__main__:main'
+        ],
+    },
 )
