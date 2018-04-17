@@ -26,11 +26,16 @@ BACKEND = default_backend()
 
 CipherParams = namedtuple('CipherParams', ('salt', 'iv'))
 
-MAGIC_STRING_VALUE = b'SCAES\x01'
-HEADER_MAGIC_STRING = len(MAGIC_STRING_VALUE)
+MAGIC_STRING_VALUE = b'SCAES'
+MAGIC_STRING_LENGTH = 5
+
+IMPLEMENTED_VERSION = 1
+VERSION_LENGTH = 1
+
 IV_LENGTH = 16
 SALT_LENGTH = 32
-HEADER_LENGTH = HEADER_MAGIC_STRING + IV_LENGTH + SALT_LENGTH
+
+HEADER_LENGTH = MAGIC_STRING_LENGTH + VERSION_LENGTH + IV_LENGTH + SALT_LENGTH
 FILENAME_HEADER_LENGTH = IV_LENGTH + SALT_LENGTH
 
 
@@ -123,10 +128,14 @@ class FileContentProvider(_FileBasedProvider):
         with open(self.path, 'rb') as src:
             header = src.read(HEADER_LENGTH)
 
-        magic_string, cipher_iv, salt = list(
-            bsplit(header, HEADER_MAGIC_STRING, IV_LENGTH, SALT_LENGTH))
+        magic_string, version, cipher_iv, salt = list(bsplit(
+            header,
+            MAGIC_STRING_LENGTH, VERSION_LENGTH, IV_LENGTH, SALT_LENGTH
+        ))
         if magic_string != MAGIC_STRING_VALUE:
-            raise ValueError(f'Invalid magic string: {magic_string:r}')
+            raise ValueError(f'Invalid magic string: {magic_string!r}')
+        if int(version) != IMPLEMENTED_VERSION:
+            raise ValueError(f'Invalid version: {version!r}')
         return CipherParams(iv=cipher_iv, salt=salt)
 
     def read(self):
