@@ -69,21 +69,21 @@ def test_content_provider_happy_path():
     salt = b'facecafe' * 4
     iv = b'0123456789abcdef'
     payload = b'1234567890'
-    with temporary_content(b'SCAES1' + iv + salt + payload) as path:
+    with temporary_content(b'SCAES\x01' + iv + salt + payload) as path:
         prov = FileContentProvider(path=path)
         assert prov.get_params() == CipherParams(salt=salt, iv=iv)
         assert join(prov.read()) == b'1234567890'
 
 
 def test_content_provider_bad_magic_string():
-    with temporary_content(b'SOCKS12354523423') as path:
+    with temporary_content(b'SOCKS\x012354523423') as path:
         prov = FileContentProvider(path=path)
         with pytest.raises(ValueError, match=r'Invalid magic string.+SOCKS'):
             prov.get_params()
 
 
 def test_content_provider_bad_version_number():
-    with temporary_content(b'SCAES2123556969') as path:
+    with temporary_content(b'SCAES\x02123556969') as path:
         prov = FileContentProvider(path=path)
         with pytest.raises(ValueError, match=r'Invalid version.+2'):
             prov.get_params()

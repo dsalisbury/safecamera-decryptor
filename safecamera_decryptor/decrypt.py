@@ -29,7 +29,7 @@ CipherParams = namedtuple('CipherParams', ('salt', 'iv'))
 MAGIC_STRING_VALUE = b'SCAES'
 MAGIC_STRING_LENGTH = 5
 
-IMPLEMENTED_VERSION = 1
+IMPLEMENTED_VERSION = b'\x01'
 VERSION_LENGTH = 1
 
 IV_LENGTH = 16
@@ -134,7 +134,7 @@ class FileContentProvider(_FileBasedProvider):
         ))
         if magic_string != MAGIC_STRING_VALUE:
             raise ValueError(f'Invalid magic string: {magic_string!r}')
-        if int(version) != IMPLEMENTED_VERSION:
+        if version != IMPLEMENTED_VERSION:
             raise ValueError(f'Invalid version: {version!r}')
         return CipherParams(iv=cipher_iv, salt=salt)
 
